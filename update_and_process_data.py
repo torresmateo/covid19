@@ -88,13 +88,13 @@ print('Calculating alignment...')
 south_america = ['Argentina', 'Uruguay', 'Chile', 'Bolivia', 'Paraguay', 'Brazil', 'Ecuador', 'Colombia', 'Venezuela', 'Peru', 'Guyana', 'Suriname', 'French Guiana']
 
 br_y = df[(df['Country/Region'] == 'Brazil')].Confirmed.to_numpy()
-X = np.array(list(range(br_y.shape[0]))).reshape(-1,1)
+X = np.array(list(range(br_y.shape[0])))
 
 #to be made into a json
 data = {
 	'ref_country':'Brazil', #TODO: pick the reference country programmatically
 	'country_data':[
-		{'name':'Brazil', 'x':X.tolist(), 'y':br_y.tolist(), 'offset':0}
+		{'name':'Brazil', 'offset':0, 'data':[{'x':int(X[i]), 'y':int(br_y[i])} for i in range(br_y.shape[0]) if (X[i] > 0) and (br_y[i]>=1)]}
 	]
 }
 
@@ -104,11 +104,11 @@ for c in south_america:
     df_c = df[(df['country_region'] == c)].sort_values('Date')
     y = df_c.Confirmed.to_numpy()
     if y.shape[0] > 0:
-        X = np.array(list(range(df_c.shape[0]))).reshape(-1,1)
+        X = np.array(list(range(df_c.shape[0])))
         y_data = y[y>0]
         delta = diff(y_data, br_y)
         data['country_data'].append(
-        	{'name':c, 'x':X.tolist(), 'y':y.tolist(), 'offset':delta}
+        	{'name':c, 'offset':delta, 'data':[{'x':int(X[i] - delta), 'y':int(y[i])} for i in range(y.shape[0]) if (X[i] - delta > 0) and (y[i]>=1)]}
         )
 
 print('saving data...')
